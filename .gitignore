@@ -30,3 +30,54 @@
 *.exe
 *.out
 *.app
+
+# Ignore Visual Studio files and directories
+*.sdf
+*.opensdf
+*.suo
+*.vcxproj.user
+*.vcxproj.filters
+*.pdb
+*.obj
+
+# Ignore CMake generated files
+CMakeFiles/
+CMakeCache.txt
+CMakeScripts/
+CMakeSettings.json
+cmake_install.cmake
+
+# Ignore the build output directory
+Debug/
+Release/
+x64/
+
+# Ignore any other build artifacts or temporary files
+*.exe
+*.dll
+*.ilk
+*.manifest
+*.pch
+*.pdb
+*.ipch/
+*.tlog/
+*.log
+*.vspscc
+*.vssscc
+*.browse*
+*.user
+*.aps
+*.lib
+*.sbr
+*.scc
+_Binaries/
+*_Previews/
+*_ReSharper*/
+
+# Ignore macOS files
+.DS_Store
+
+# Ignore user-specific files
+*.userprefs
+*.sln.docstates
+*.vscode
