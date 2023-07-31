@@ -41,59 +41,131 @@ public:
 	file(std::filesystem::path file_path)
 	{
 		_file_path = file_path;
+		_file_size = get_file_size(_file_path);
 	}
 
-	// Method to encrypt a file
-	void encrypt_file()
+	enum Operation
 	{
-		const auto _file_size{ get_file_size(_file_path) };
-		std::ifstream _file_stream{ _file_path, std::ios::binary };
+		Encrypt,
+		Decrypt
+	};
+
+	// Actual encryption/decryption method
+	void run_operation(Operation operation)
+	{
 		const auto _base_path{ _file_path.parent_path() / _file_path.stem() };
-		std::filesystem::path _new_path{ _base_path.string() + "2" + _file_path.extension().string()};
-		std::ofstream _output_file{ _new_path, std::ios::binary };
+		std::filesystem::path _output_file_path{ _base_path.string() + "2" + _file_path.extension().string() };
+		std::ifstream _source_file{ _file_path, std::ios::binary };
+		std::ofstream _output_file{ _output_file_path, std::ios::binary };
 		constexpr int _buffer_size = 4096;
-		std::array<char, _buffer_size> _buffer{};
-		std::uintmax_t _total_batches{ (_file_size / 4096) };
+		std::array<char, _buffer_size> _file_buffer{};
+		int _total_blocks{ _file_size / 4096 };
 
-		if (_file_stream.is_open() == false && _output_file.is_open() == false)
+		try
 		{
-			std::cerr << "Failed to open file D:" << std::endl;
-			return;
-		}
-		else 
-		{
-			_file_stream.seekg(0);
+			if (_source_file.is_open() == false) 
+				throw std::ios_base::failure("Failed to open source file");
+			if (_output_file.is_open() == false) 
+				throw std::ios_base::failure("Failed to open output file");
 
-			for (int i = 0; i < _total_batches; i++)
+			_source_file.seekg(0);
+
+			for (int i = 0; i < _total_blocks; i++)
 			{
-				_file_stream.read(_buffer.data(), _buffer.size());
-				_output_file.write(_buffer.data(), _buffer.size());
+				_source_file.read(_file_buffer.data(), _file_buffer.size());
+
+
+				_output_file.write(_file_buffer.data(), _file_buffer.size());
 			}
 
 			auto _remaining_size{ _file_size % _buffer_size };
 
-			_file_stream.read(_buffer.data(), _remaining_size);
-			_output_file.write(_buffer.data(), _remaining_size);
+			_source_file.read(_file_buffer.data(), _remaining_size);
+
+			// XOR
+
+			_output_file.write(_file_buffer.data(), _remaining_size);
+		}
+		catch (const std::ios_base::failure& e)
+		{
+			std::cout	<< "Caught an ios_base::failure.\n"
+						<< "Explanatory string: " << e.what() << '\n'
+						<< "Error code: " << e.code() << '\n';
 		}
 	}
 
-	// Method to decrypt a file
-	void decrypt_file()
+	void xor_crypt()
+	{
+		//const char* key, int key_length, char* data, int data_length
+
+		// if key_lenght < data_lenth
+		// append key to itself until key_length =< data_length
+
+		// get pointer of data
+		// provider to buffer
+		// get a key
+		// overwrite existing data with encrypted data by reading a byte of data and XOR'ing with key
+		
+
+		const std::string _data = "This sentence is going to be used as example data.";
+		//const std::string _data = "This sentence is going to be used as example data.";
+		const int _data_length = _data.length();
+
+		const std::string _key = "key";
+		const int _key_length = _key.length();
+
+		std::array<char, 50> _char_array{};
+		std::array<char, 3> _key_array{};
+
+		_data.copy(_char_array.data(), _data.length());
+		_key.copy(_key_array.data(), _key.length());
+
+		const int _block_size = 32; // 32 bytes
+
+		std::array<char, 50> _converted_char_array{};
+
+		int j = 0;
+		for (int i = 0; i < _data_length; i++)
+		{
+			const char a = _char_array[i];
+			const char b = _key_array[j];
+
+			char x = a ^ b;
+
+			_converted_char_array[i] = x;
+			
+			j++;
+			if (j > 2)
+			{
+				j = 0;
+			}
+		}
+	}
+
+	void convert_string_to_char_key(std::string string_key)
 	{
 
 	}
 
 private:
 	std::filesystem::path _file_path;
-	int64_t _current_character;
-	uintmax_t _file_size;
+	int _file_size;
 
-	uintmax_t get_file_size(std::filesystem::path path)
+	int get_file_size(std::filesystem::path path)
 	{
-		return std::filesystem::file_size(path);
+		std::ifstream _source_file{ path, std::ios::binary };
+		_source_file.seekg(0, std::ios_base::end);
+		return _source_file.tellg();
 	}
 
-	void read_file_section()
+	// Method to encrypt a file
+	void encrypt_file()
+	{
+		
+	}
+
+	// Method to decrypt a file
+	void decrypt_file()
 	{
 
 	}
@@ -103,11 +175,11 @@ int main(int argc, char** argv)
 {
 	//std::int8_t _selected_option{ startup() };
 
-	std::filesystem::path _path("C:\\Users\\yusuf\\Downloads\\asd.zip");
+	std::filesystem::path _path("C:\\Users\\yusuf\\Downloads\\red.jpg");
 
 	file _newFile = file(_path);
 
-	_newFile.encrypt_file();
+	_newFile.run_operation(file::Encrypt);
 
 	return 0;
 }
